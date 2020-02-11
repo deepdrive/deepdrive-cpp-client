@@ -1,0 +1,15 @@
+directories:
+  main
+
+# Automatically includes all relevant targets under the 'directories' above
+derive_targets_from_directories: true
+
+targets:
+  //main:deepdrive_client_test
+
+additional_languages:
+  # Uncomment any additional languages you want supported
+  # dart
+  # javascript
+  # python
+  # typescript
