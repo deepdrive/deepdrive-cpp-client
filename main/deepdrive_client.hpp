@@ -3,6 +3,10 @@
 void hello();
 
 namespace deepdrive {
+  struct DDOut {
+    int test_field;
+  };
+
   /**
   * ZMQ client for the Deepdrive simulator
   */
