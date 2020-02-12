@@ -7,5 +7,5 @@
 
 int main () {
   std::cout << "yoyoyoyoyo" << std::endl;
-  hello();
+  deepdrive::DeepdriveClient();
 }

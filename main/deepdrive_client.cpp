@@ -6,53 +6,72 @@
 #include "deepdrive_client.hpp"
 
 //  Receive 0MQ string from socket and convert into string
-static std::string
-s_recv (zmq::socket_t & socket) {
+static std::string s_recv(zmq::socket_t &socket) {
 
-  zmq::message_t message;
-  socket.recv(&message);
+    zmq::message_t message;
+    socket.recv(&message);
 
-  return std::string(static_cast<char*>(message.data()), message.size());
-}
-
-void hello () {
-  //  Prepare our context and socket
-  zmq::context_t context (1);
-  zmq::socket_t socket (context, ZMQ_PAIR);
-  socket.connect("tcp://localhost:5555");
-
-  std::cout << "Connected to ZMQ PAIR server at 0.0.0.0:5555" << std::endl;
-
-  while (true) {
-    zmq::message_t request;
-
-    std::string string = s_recv (socket);
-    std::cout << string << std::endl;
-
-    //  Wait for next request from client
-//    socket.recv (&request);
-//    std::cout << "Received Hello" << std::endl;
-
-    //  Do some 'work'
-    sleep(1);
-
-    //  Send reply back to client
-    zmq::message_t reply (5);
-    memcpy (reply.data (), "World", 5);
-    socket.send (reply);
-  }
+    return std::string(static_cast<char *>(message.data()), message.size());
 }
 
 namespace deepdrive {
-  DeepdriveClient::DeepdriveClient() {
 
-  }
+/*
+ * A Client object acts as a remote proxy to the deepdrive gym environment.
+ *  Methods that you would call on the env, like step() are also called on
+ * this object, with communication over the network -
+ * rather than over shared memory (for observations) and network
+ * (for transactions like reset) as is the case with the locally run
+ * sim/gym_env.py.
+ *
+ * This allows the agent and environment to run on separate machines, but
+ * with the same API as a local agent, namely the gym API.
+ * The local gym environment is then run by api/server.py which proxies
+ * RPC's from this client to the local environment.
+ * All network communication happens over ZMQ to take advantage of their
+ * highly optimized cross-language / cross-OS sockets.
+ * NOTE: This will obviously run more slowly than a local agent which
+ * communicates sensor data over shared memory.
+*/
+DeepdriveClient::DeepdriveClient()
+    : _context(1)
+    , _socket(_context, ZMQ_PAIR)
+{
+    //  Prepare our context and socket
+    _socket.connect("tcp://localhost:5555");
+    std::cout << "Connected to ZMQ PAIR server at 0.0.0.0:5555" << std::endl;
 
-  DDOut DeepdriveClient::step() {
+    //  Start server
+    zmq::message_t start_request(24);
+    memcpy(start_request.data(), "START SERVER PLACEHOLDER", 24);
+    _socket.send(start_request);
+
+// TODO: Remove while loop, just for testing
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wmissing-noreturn"
+    while (true) {
+        zmq::message_t request;
+
+        std::string string = s_recv(_socket);
+        std::cout << string << std::endl;
+
+        zmq::message_t reply2(6);
+        memcpy(reply2.data(), "THANKS", 6);
+        _socket.send(reply2);
+
+        sleep(1);
+    }
+#pragma clang diagnostic pop
+
+}
+
+DDOut DeepdriveClient::step() {
     return {};
-  }
+}
 
-  DeepdriveClient::~DeepdriveClient() = default;
+DeepdriveClient::~DeepdriveClient() {
+    _socket.close();
+};
 
 }
 

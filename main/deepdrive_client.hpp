@@ -1,6 +1,6 @@
 #pragma once
 
-void hello();
+#include <zmq.hpp>
 
 namespace deepdrive {
   struct DDOut {
@@ -26,6 +26,8 @@ namespace deepdrive {
   protected:
 
   private:
+    zmq::context_t _context;
+    zmq::socket_t _socket;
 
   };
 
@@ -33,7 +35,49 @@ namespace deepdrive {
 
 
 /*
- *     def step(self, action):
+  def deserialize_space(resp):
+      if resp['type'] == "<class 'gym.spaces.box.Box'>":
+          ret = spaces.Box(resp['low'], resp['high'], dtype=resp['dtype'])
+      else:
+          raise RuntimeError('Unsupported action space type')
+      return ret
+
+
+  class Client(object):
+      """
+      A Client object acts as a remote proxy to the deepdrive gym environment.
+      Methods that you would call on the env, like step() are also called on
+      this object, with communication over the network -
+      rather than over shared memory (for observations) and network
+      (for transactions like reset) as is the case with the locally run
+      sim/gym_env.py.
+      This allows the agent and environment to run on separate machines, but
+      with the same API as a local agent, namely the gym API.
+      The local gym environment is then run by api/server.py which proxies
+      RPC's from this client to the local environment.
+      All network communication happens over ZMQ to take advantage of their
+      highly optimized cross-language / cross-OS sockets.
+      NOTE: This will obviously run more slowly than a local agent which
+      communicates sensor data over shared memory.
+      """
+      def __init__(self, **kwargs):
+          """
+          :param kwargs['client_render'] (bool): Whether to render on this
+              side of the client server connection.
+              Passing kwargs['render'] = True will cause the server to render
+              an MJPG stream at http://localhost:5000
+          """
+          self.socket = None
+          self.last_obz = None
+          self.create_socket()
+          self.should_render = kwargs.get('client_render', False)
+          kwargs['cameras'] = kwargs.get('cameras', [c.DEFAULT_CAM])
+          log.info('Waiting for sim to start on server...')
+          # TODO: Fix connecting to an open sim
+          self._send(m.START, kwargs=kwargs)
+          log.info('===========> Deepdrive sim started')
+
+      def step(self, action):
         if hasattr(action, 'as_gym'):
             # Legacy support for original agents written within deepdrive repo
             action = action.as_gym()
