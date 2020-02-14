@@ -14,4 +14,5 @@ cc_library(
         "-lzmq",
         #        "-pthread",
     ],
+    deps = ["@rapidjson//:rapidjson"],
 )
