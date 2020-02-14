@@ -9,13 +9,13 @@
 #include "deepdrive_client.hpp"
 
 //  Receive 0MQ string from socket and convert into string
-static std::string s_recv(zmq::socket_t &socket) {
-
-    zmq::message_t message;
-    socket.recv(&message);
-
-    return std::string(static_cast<char *>(message.data()), message.size());
-}
+//static std::string s_recv(zmq::socket_t &socket) {
+//
+//    zmq::message_t message;
+//    socket.recv(&message);
+//
+//    return std::string(static_cast<char *>(message.data()), message.size());
+//}
 
 namespace deepdrive {
 
@@ -40,30 +40,50 @@ DeepdriveClient::DeepdriveClient()
     : _context(1)
     , _socket(_context, ZMQ_PAIR)
 {
-    rapidjson::Document d;
-    d.Parse("{}");
+    _socket.connect("tcp://localhost:5557");
+    std::cout << "Connected to ZMQ PAIR server at 0.0.0.0:5557" << std::endl;
+
+    send_start_message();
 
     // 2. Modify it by DOM.
 //    rapidjson::Value& s = d["stars"];
 //    s.SetInt(s.GetInt() + 1);
 
-    ;
+
+
+        //// TODO: Remove while loop, just for testing
+//#pragma clang diagnostic push
+//#pragma clang diagnostic ignored "-Wmissing-noreturn"
+//    while (true) {
+//        zmq::message_t request;
+//
+//        std::string string = s_recv(_socket);
+//        std::cout << string << std::endl;
+//
+//        zmq::message_t req(buffer.GetSize());
+//        memcpy(req.data(), buffer.GetString(), buffer.GetSize());
+//        _socket.send(req);
+//
+//        sleep(1);
+//    }
+//#pragma clang diagnostic pop
+
+}
+
+void DeepdriveClient::send_start_message() {
+    rapidjson::Document d;
+    d.Parse("{}");
+
     rapidjson::MemoryPoolAllocator<> &alloc = d.GetAllocator();
     d.AddMember("method", rapidjson::Value ("start"), alloc);
     d.AddMember("args", rapidjson::Value (rapidjson::kArrayType), alloc);
     d.AddMember("kwargs", rapidjson::Value (rapidjson::kObjectType), alloc);
 
-    // 3. Stringify the DOM
     rapidjson::StringBuffer buffer;
     rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
     d.Accept(writer);
 
     std::cout << buffer.GetString() << std::endl;
-
-
-    //  Prepare our context and socket
-    _socket.connect("tcp://localhost:5557");
-    std::cout << "Connected to ZMQ PAIR server at 0.0.0.0:5557" << std::endl;
 
     //  Start server
     zmq::message_t start_request(buffer.GetSize());
@@ -71,27 +91,9 @@ DeepdriveClient::DeepdriveClient()
     _socket.send(start_request);
 
     std::cout << buffer.GetString() << std::endl;
-
-// TODO: Remove while loop, just for testing
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wmissing-noreturn"
-    while (true) {
-        zmq::message_t request;
-
-        std::string string = s_recv(_socket);
-        std::cout << string << std::endl;
-
-        zmq::message_t req(buffer.GetSize());
-        memcpy(req.data(), buffer.GetString(), buffer.GetSize());
-        _socket.send(req);
-
-        sleep(1);
-    }
-#pragma clang diagnostic pop
-
 }
 
-DDOut DeepdriveClient::step() {
+    DDOut DeepdriveClient::step() {
     return {};
 }
 

@@ -29,6 +29,7 @@ namespace deepdrive {
     zmq::context_t _context;
     zmq::socket_t _socket;
 
+    void send_start_message();
   };
 
 }  // namespace deepdrive
