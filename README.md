@@ -1,3 +1,3 @@
 ```
-bazel build //main:deepdrive-cpp-client
+bazel build //deepdrive_client
 ```
