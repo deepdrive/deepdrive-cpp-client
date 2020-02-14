@@ -1,5 +1,7 @@
 directories:
   main
+  .
+  bazel_external_deps
 
 # Automatically includes all relevant targets under the 'directories' above
 derive_targets_from_directories: true
