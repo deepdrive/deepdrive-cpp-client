@@ -40,35 +40,37 @@ DeepdriveClient::DeepdriveClient()
     : _context(1)
     , _socket(_context, ZMQ_PAIR)
 {
-
-
-
-    // 1. Parse a JSON string into DOM.
-    const char* json = "{\"project\":\"rapidjson\",\"stars\":10}";
     rapidjson::Document d;
-    d.Parse(json);
+    d.Parse("{}");
 
     // 2. Modify it by DOM.
-    rapidjson::Value& s = d["stars"];
-    s.SetInt(s.GetInt() + 1);
+//    rapidjson::Value& s = d["stars"];
+//    s.SetInt(s.GetInt() + 1);
+
+    ;
+    rapidjson::MemoryPoolAllocator<> &alloc = d.GetAllocator();
+    d.AddMember("method", rapidjson::Value ("start"), alloc);
+    d.AddMember("args", rapidjson::Value (rapidjson::kArrayType), alloc);
+    d.AddMember("kwargs", rapidjson::Value (rapidjson::kObjectType), alloc);
 
     // 3. Stringify the DOM
     rapidjson::StringBuffer buffer;
     rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
     d.Accept(writer);
 
-    // Output {"project":"rapidjson","stars":11}
     std::cout << buffer.GetString() << std::endl;
 
 
     //  Prepare our context and socket
-    _socket.connect("tcp://localhost:5555");
-    std::cout << "Connected to ZMQ PAIR server at 0.0.0.0:5555" << std::endl;
+    _socket.connect("tcp://localhost:5557");
+    std::cout << "Connected to ZMQ PAIR server at 0.0.0.0:5557" << std::endl;
 
     //  Start server
-    zmq::message_t start_request(24);
-    memcpy(start_request.data(), "start", 5);
+    zmq::message_t start_request(buffer.GetSize());
+    memcpy(start_request.data(), buffer.GetString(), buffer.GetSize());
     _socket.send(start_request);
+
+    std::cout << buffer.GetString() << std::endl;
 
 // TODO: Remove while loop, just for testing
 #pragma clang diagnostic push
@@ -79,9 +81,9 @@ DeepdriveClient::DeepdriveClient()
         std::string string = s_recv(_socket);
         std::cout << string << std::endl;
 
-        zmq::message_t reply2(6);
-        memcpy(reply2.data(), "THANKS", 6);
-        _socket.send(reply2);
+        zmq::message_t req(buffer.GetSize());
+        memcpy(req.data(), buffer.GetString(), buffer.GetSize());
+        _socket.send(req);
 
         sleep(1);
     }

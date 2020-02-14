@@ -6,6 +6,5 @@
 #include "deepdrive_client.hpp"
 
 int main () {
-  std::cout << "yoyoyoyoyo" << std::endl;
   deepdrive::DeepdriveClient();
 }
