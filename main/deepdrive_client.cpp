@@ -67,7 +67,7 @@ DeepdriveClient::DeepdriveClient()
 
     //  Start server
     zmq::message_t start_request(24);
-    memcpy(start_request.data(), "START SERVER PLACEHOLDER", 24);
+    memcpy(start_request.data(), "start", 5);
     _socket.send(start_request);
 
 // TODO: Remove while loop, just for testing
