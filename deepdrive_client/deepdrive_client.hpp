@@ -1,12 +1,9 @@
 #pragma once
 
 #include <zmq.hpp>
+#include <rapidjson/document.h>
 
 namespace deepdrive {
-  struct DDOut {
-    int test_field;
-  };
-
   /**
   * ZMQ client for the Deepdrive simulator
   */
@@ -20,7 +17,8 @@ namespace deepdrive {
 
     virtual ~DeepdriveClient();
 
-    DDOut step();
+    /** Get Deepdrive observation after executing value **/
+    rapidjson::Value step(rapidjson::Value action);
 
 
   protected:
@@ -30,6 +28,9 @@ namespace deepdrive {
     zmq::socket_t _socket;
 
     void send_start_message();
+
+    rapidjson::Document
+    send(rapidjson::Value &method, rapidjson::Value &args, rapidjson::Value &kwargs);
   };
 
 }  // namespace deepdrive

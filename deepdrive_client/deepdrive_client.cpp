@@ -1,8 +1,4 @@
-#include <zmq.hpp>
-#include <string>
 #include <iostream>
-#include <unistd.h>
-#include <rapidjson/document.h>
 #include <rapidjson/writer.h>
 #include <rapidjson/stringbuffer.h>
 
@@ -18,7 +14,6 @@
 //}
 
 namespace deepdrive {
-
 /*
  * A Client object acts as a remote proxy to the deepdrive gym environment.
  * Methods that you would call on the env, like step() are also called on
@@ -36,6 +31,7 @@ namespace deepdrive {
  * NOTE: This will obviously run more slowly than a local agent which
  * communicates sensor data over shared memory.
 */
+
 DeepdriveClient::DeepdriveClient()
     : _context(1)
     , _socket(_context, ZMQ_PAIR)
@@ -71,29 +67,57 @@ DeepdriveClient::DeepdriveClient()
 }
 
 void DeepdriveClient::send_start_message() {
+    rapidjson::Value method("start");;
     rapidjson::Document d;
-    d.Parse("{}");
-
     rapidjson::MemoryPoolAllocator<> &alloc = d.GetAllocator();
-    d.AddMember("method", rapidjson::Value ("start"), alloc);
-    d.AddMember("args", rapidjson::Value (rapidjson::kArrayType), alloc);
-    d.AddMember("kwargs", rapidjson::Value (rapidjson::kObjectType), alloc);
+    rapidjson::Value args(rapidjson::kArrayType);
+    for (int i = 5; i <= 10; i++) {
+        args.PushBack(i, alloc);
+    }
+    args.PushBack("Lua", alloc).PushBack("Mio", alloc);
 
-    rapidjson::StringBuffer buffer;
-    rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
-    d.Accept(writer);
+    rapidjson::Value kwargs(rapidjson::kObjectType);
+    {
+        rapidjson::Value key("key");
+        rapidjson::Value value("value");
+        // adding elements to contacts array.
+        kwargs.AddMember(key, value, alloc);
+    }
 
-    std::cout << buffer.GetString() << std::endl;
-
-    //  Start server
-    zmq::message_t start_request(buffer.GetSize());
-    memcpy(start_request.data(), buffer.GetString(), buffer.GetSize());
-    _socket.send(start_request);
+    rapidjson::Document buffer = send(method, args, kwargs);
 
     std::cout << buffer.GetString() << std::endl;
 }
 
-    DDOut DeepdriveClient::step() {
+rapidjson::Document
+DeepdriveClient::send(rapidjson::Value &method, rapidjson::Value &args, rapidjson::Value &kwargs) {
+    rapidjson::Document req;
+    rapidjson::MemoryPoolAllocator<> &alloc = req.GetAllocator();
+    req.Parse("{}");
+    req.AddMember("method", method, alloc);
+    req.AddMember("args", args, alloc);
+    req.AddMember("kwargs", kwargs, alloc);
+
+    rapidjson::StringBuffer buffer;
+    rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
+    req.Accept(writer);
+
+    std::cout << buffer.GetString() << std::endl;
+
+    zmq::message_t start_request(buffer.GetSize());
+    memcpy(start_request.data(), buffer.GetString(), buffer.GetSize());
+    _socket.send(start_request);
+
+    rapidjson::Document res;
+    res.Parse(buffer.GetString());
+
+    return res;
+}
+
+rapidjson::Value
+DeepdriveClient::step(rapidjson::Value action) {
+    // TODO: Use move semantics to call this
+    
     return {};
 }
 
