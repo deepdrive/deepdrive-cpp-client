@@ -7,7 +7,7 @@ directories:
 derive_targets_from_directories: true
 
 targets:
-  //deepdrive_client:deepdrive_client_test
+  //deepdrive_client:forward_agent
 
 additional_languages:
   # Uncomment any additional languages you want supported

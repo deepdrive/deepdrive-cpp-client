@@ -1,8 +1,8 @@
 load("@rules_cc//cc:defs.bzl", "cc_binary")
 
 cc_binary(
-    name = "deepdrive_client_test",
-    srcs = ["test.cpp"],
+    name = "forward_agent",
+    srcs = ["forward_agent.cpp"],
     deps = [":deepdrive_client"],
 )
 
@@ -14,5 +14,5 @@ cc_library(
         "-lzmq",
         #        "-pthread",
     ],
-    deps = ["@rapidjson//:rapidjson"],
+    deps = ["@rapidjson"],
 )

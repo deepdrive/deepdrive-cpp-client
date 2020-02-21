@@ -1,17 +1,19 @@
 #include <iostream>
+#include <utility>
 #include <rapidjson/writer.h>
 #include <rapidjson/stringbuffer.h>
+#include <zconf.h>
 
 #include "deepdrive_client.hpp"
 
 //  Receive 0MQ string from socket and convert into string
-//static std::string s_recv(zmq::socket_t &socket) {
-//
-//    zmq::message_t message;
-//    socket.recv(&message);
-//
-//    return std::string(static_cast<char *>(message.data()), message.size());
-//}
+static std::string s_recv(zmq::socket_t &socket) {
+
+    zmq::message_t message;
+    socket.recv(&message);
+
+    return std::string(static_cast<char *>(message.data()), message.size());
+}
 
 namespace deepdrive {
 /*
@@ -33,60 +35,47 @@ namespace deepdrive {
 */
 
 DeepdriveClient::DeepdriveClient()
-    : _context(1)
-    , _socket(_context, ZMQ_PAIR)
 {
     _socket.connect("tcp://localhost:5557");
     std::cout << "Connected to ZMQ PAIR server at 0.0.0.0:5557" << std::endl;
-
-    send_start_message();
-
-    // 2. Modify it by DOM.
-//    rapidjson::Value& s = d["stars"];
-//    s.SetInt(s.GetInt() + 1);
-
-
-
-        //// TODO: Remove while loop, just for testing
-//#pragma clang diagnostic push
-//#pragma clang diagnostic ignored "-Wmissing-noreturn"
-//    while (true) {
-//        zmq::message_t request;
-//
-//        std::string string = s_recv(_socket);
-//        std::cout << string << std::endl;
-//
-//        zmq::message_t req(buffer.GetSize());
-//        memcpy(req.data(), buffer.GetString(), buffer.GetSize());
-//        _socket.send(req);
-//
-//        sleep(1);
-//    }
-//#pragma clang diagnostic pop
+    start_sim();
+//    simple_call_resp_loop();
 
 }
 
-void DeepdriveClient::send_start_message() {
-    rapidjson::Value method("start");;
-    rapidjson::Document d;
-    rapidjson::MemoryPoolAllocator<> &alloc = d.GetAllocator();
+void DeepdriveClient::simple_call_resp_loop() {
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wmissing-noreturn"
+    // TODO: Remove while loop, just for testing
+    while (true) {
+        zmq::message_t msg(5);
+        memcpy(msg.data(), "World", 5);
+        _socket.send(msg);
+
+        std::string string = s_recv(_socket);
+        std::cout << string << std::endl;
+
+        sleep(1);
+    }
+#pragma clang diagnostic pop
+}
+
+/**
+ * The sim can be configured remotely or locally. To configure remotely,
+ * just start the server process with --json-server. Then pass kwargs similar
+ * to the following
+ *
+ * kwargs = {'is_remote_client': True, 'render': True, 'cameras': [
+ *  {'name': 'My cam!', 'field_of_view': 60, 'capture_width': 227,
+ *   'capture_height': 227, 'relative_position': [150, 1.0, 200],
+ *   'relative_rotation': [0.0, 0.0, 0.0]}]}
+ *
+ */
+void DeepdriveClient::start_sim() {
     rapidjson::Value args(rapidjson::kArrayType);
-    for (int i = 5; i <= 10; i++) {
-        args.PushBack(i, alloc);
-    }
-    args.PushBack("Lua", alloc).PushBack("Mio", alloc);
-
     rapidjson::Value kwargs(rapidjson::kObjectType);
-    {
-        rapidjson::Value key("key");
-        rapidjson::Value value("value");
-        // adding elements to contacts array.
-        kwargs.AddMember(key, value, alloc);
-    }
-
-    rapidjson::Document buffer = send(method, args, kwargs);
-
-    std::cout << buffer.GetString() << std::endl;
+    rapidjson::Value start("start");
+    rapidjson::Document resp = send(start, args, kwargs);
 }
 
 rapidjson::Document
@@ -94,6 +83,7 @@ DeepdriveClient::send(rapidjson::Value &method, rapidjson::Value &args, rapidjso
     rapidjson::Document req;
     rapidjson::MemoryPoolAllocator<> &alloc = req.GetAllocator();
     req.Parse("{}");
+
     req.AddMember("method", method, alloc);
     req.AddMember("args", args, alloc);
     req.AddMember("kwargs", kwargs, alloc);
@@ -108,22 +98,60 @@ DeepdriveClient::send(rapidjson::Value &method, rapidjson::Value &args, rapidjso
     memcpy(start_request.data(), buffer.GetString(), buffer.GetSize());
     _socket.send(start_request);
 
+    std::string resp_str = s_recv(_socket);
     rapidjson::Document res;
-    res.Parse(buffer.GetString());
+    res.Parse(resp_str.c_str());
+    std::cout << res.GetString() << std::endl;
 
     return res;
 }
 
-rapidjson::Value
+rapidjson::Document
 DeepdriveClient::step(rapidjson::Value action) {
-    // TODO: Use move semantics to call this
-    
-    return {};
+    rapidjson::Value args (rapidjson::kArrayType);
+    rapidjson::Value method("step");
+    return send(method, args, action);
 }
+
+
+rapidjson::Document DeepdriveClient::reset() {
+    rapidjson::Value method("reset");
+    rapidjson::Value args(rapidjson::kArrayType);
+    rapidjson::Value kwargs(rapidjson::kObjectType);
+    return send(method, args, kwargs);
+};
 
 DeepdriveClient::~DeepdriveClient() {
     _socket.close();
-};
+}
+
+rapidjson::Value
+DeepdriveClient::get_action(double steering, double throttle, double brake,
+                            double handbrake, bool has_control) {
+    rapidjson::Value action(rapidjson::kObjectType);
+    {
+        rapidjson::Value steering_key("steering");
+        rapidjson::Value steering_value(steering);
+        action.AddMember(steering_key, steering_value, _alloc);
+
+        rapidjson::Value throttle_key("throttle");
+        rapidjson::Value throttle_value(throttle);
+        action.AddMember(throttle_key, throttle_value, _alloc);
+
+        rapidjson::Value brake_key("brake");
+        rapidjson::Value brake_value(brake);
+        action.AddMember(brake_key, brake_value, _alloc);
+
+        rapidjson::Value handbrake_key("handbrake");
+        rapidjson::Value handbrake_value(handbrake);
+        action.AddMember(handbrake_key, handbrake_value, _alloc);
+
+        rapidjson::Value has_control_key("has_control");
+        rapidjson::Value has_control_value(has_control);
+        action.AddMember(has_control_key, has_control_value, _alloc);
+    }
+    return action;
+}
 
 }
 

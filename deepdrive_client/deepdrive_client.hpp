@@ -4,11 +4,11 @@
 #include <rapidjson/document.h>
 
 namespace deepdrive {
-  /**
-  * ZMQ client for the Deepdrive simulator
-  */
-  class DeepdriveClient {
-  public:
+/**
+* ZMQ client for the Deepdrive simulator
+*/
+class DeepdriveClient {
+public:
     /**
      * Contructs a new client.
      *
@@ -17,21 +17,30 @@ namespace deepdrive {
 
     virtual ~DeepdriveClient();
 
-    /** Get Deepdrive observation after executing value **/
-    rapidjson::Value step(rapidjson::Value action);
+    /** Get Deepdrive observation after executing action **/
+    rapidjson::Document step(rapidjson::Value action);
+
+    /** Reset the sim **/
+    rapidjson::Document reset();
+
+    rapidjson::Value
+    get_action(double steering, double throttle, double brake, double handbrake, bool has_control);
 
 
-  protected:
+protected:
 
-  private:
-    zmq::context_t _context;
-    zmq::socket_t _socket;
+private:
+    zmq::context_t _context = zmq::context_t(1);
+    zmq::socket_t _socket = zmq::socket_t(_context, ZMQ_PAIR);
+    rapidjson::MemoryPoolAllocator<> &_alloc = rapidjson::Document().GetAllocator();
 
-    void send_start_message();
+    void start_sim();
 
     rapidjson::Document
     send(rapidjson::Value &method, rapidjson::Value &args, rapidjson::Value &kwargs);
-  };
+
+    void simple_call_resp_loop();
+};
 
 }  // namespace deepdrive
 
