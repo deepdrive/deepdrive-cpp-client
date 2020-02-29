@@ -16,14 +16,20 @@ int main(int argc, char* argv[]) {
 
     deepdrive::DeepdriveClient env(verbose);
     auto done = false;
-    while (true) {
+    for (int i = 0; i < 10; i ++) {
         while ( ! done) {
-            auto observation = env.step(env.get_action(0, 1, 0, 0, true));
-            std::cout << observation["speed"].GetInt() << std::endl;
-            done = observation["done"].GetBool();
+            auto step_info = env.step(env.get_action(0, 1, 0, 0, true));
+            if(verbose) {
+                std::cout << step_info["reward"].GetFloat() << std::endl;
+                if(step_info.HasMember("observation") && step_info["observation"].IsObject()) {
+                    std::cout << "speed " << step_info["observation"]["speed"].GetFloat() / 100 << std::endl;
+                }
+            }
+            done = step_info["done"].GetBool();
         }
         env.reset();
         std::cout << "Episode finished" << std::endl;
         done = false;
     }
+    std::cout << "Done" << std::endl;
 }
