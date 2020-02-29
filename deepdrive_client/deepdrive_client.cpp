@@ -106,9 +106,10 @@ DeepdriveClient::send(rapidjson::Value &method, rapidjson::Value &args, rapidjso
     return res;
 }
 
+/** Server methods **/
 rapidjson::Document
 DeepdriveClient::step(rapidjson::Value action) {
-    rapidjson::Value args (rapidjson::kArrayType);
+    rapidjson::Value args(rapidjson::kArrayType);
     rapidjson::Value method("step");
     return send(method, args, action);
 }
@@ -121,7 +122,18 @@ rapidjson::Document DeepdriveClient::reset() {
     return send(method, args, kwargs);
 };
 
+rapidjson::Document
+DeepdriveClient::close() {
+    rapidjson::Value method("close");
+    rapidjson::Value args(rapidjson::kArrayType);
+    rapidjson::Value kwargs(rapidjson::kObjectType);
+    return send(method, args, kwargs);
+}
+
+/** End server methods **/
+
 DeepdriveClient::~DeepdriveClient() {
+    close();
     _socket.close();
 }
 
@@ -153,5 +165,4 @@ DeepdriveClient::get_action(double steering, double throttle, double brake,
     return action;
 }
 
-}
-
+} // end deepdrive namespace

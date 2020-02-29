@@ -23,6 +23,10 @@ public:
     /** Reset the sim **/
     rapidjson::Document reset();
 
+    /** Close sim **/
+    rapidjson::Document close();
+
+    /** Get server compatible action **/
     rapidjson::Value
     get_action(double steering, double throttle, double brake, double handbrake, bool has_control);
 
