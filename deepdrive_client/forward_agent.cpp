@@ -5,8 +5,16 @@
 #include <iostream>
 #include "deepdrive_client.hpp"
 
-int main() {
-    deepdrive::DeepdriveClient env;
+int main(int argc, char* argv[]) {
+    bool verbose = false;
+    if(argc == 2) {
+        std::string arg1 = argv[1];
+        if(arg1 == "-v") {
+            verbose = true;
+        }
+    }
+
+    deepdrive::DeepdriveClient env(verbose);
     auto done = false;
     while (true) {
         while ( ! done) {

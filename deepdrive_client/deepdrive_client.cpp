@@ -34,8 +34,8 @@ namespace deepdrive {
  * communicates sensor data over shared memory.
 */
 
-DeepdriveClient::DeepdriveClient()
-{
+DeepdriveClient::DeepdriveClient(bool verbose) {
+    this->verbose = verbose;
     _socket.connect("tcp://localhost:5557");
     std::cout << "Connected to ZMQ PAIR server at 0.0.0.0:5557" << std::endl;
     start_sim();
@@ -92,13 +92,17 @@ DeepdriveClient::send(rapidjson::Value &method, rapidjson::Value &args, rapidjso
     rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
     req.Accept(writer);
 
-    std::cout << buffer.GetString() << std::endl;
+    if(verbose)
+        std::cout << buffer.GetString() << std::endl;
 
     zmq::message_t start_request(buffer.GetSize());
     memcpy(start_request.data(), buffer.GetString(), buffer.GetSize());
     _socket.send(start_request);
 
     std::string resp_str = s_recv(_socket);
+    if(verbose)
+        std::cout << resp_str << std::endl;
+
     rapidjson::Document res;
     res.Parse(resp_str.c_str());
     std::cout << res.GetString() << std::endl;

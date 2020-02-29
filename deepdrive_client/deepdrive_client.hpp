@@ -13,7 +13,7 @@ public:
      * Contructs a new client.
      *
      */
-    explicit DeepdriveClient();
+    explicit DeepdriveClient(bool verbose=false);
 
     virtual ~DeepdriveClient();
 
@@ -30,6 +30,7 @@ public:
     rapidjson::Value
     get_action(double steering, double throttle, double brake, double handbrake, bool has_control);
 
+    bool verbose = false;
 
 protected:
 
