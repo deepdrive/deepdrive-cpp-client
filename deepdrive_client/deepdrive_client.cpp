@@ -105,7 +105,10 @@ DeepdriveClient::send(rapidjson::Value &method, rapidjson::Value &args, rapidjso
 
     rapidjson::Document res;
     res.Parse(resp_str.c_str());
-    std::cout << res.GetString() << std::endl;
+
+    if (res.HasParseError()) {
+        throw std::runtime_error("Parse error");
+    }
 
     return res;
 }
