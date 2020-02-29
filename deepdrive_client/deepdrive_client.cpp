@@ -39,25 +39,6 @@ DeepdriveClient::DeepdriveClient(bool verbose) {
     _socket.connect("tcp://localhost:5557");
     std::cout << "Connected to ZMQ PAIR server at 0.0.0.0:5557" << std::endl;
     start_sim();
-//    simple_call_resp_loop();
-
-}
-
-void DeepdriveClient::simple_call_resp_loop() {
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wmissing-noreturn"
-    // TODO: Remove while loop, just for testing
-    while (true) {
-        zmq::message_t msg(5);
-        memcpy(msg.data(), "World", 5);
-        _socket.send(msg);
-
-        std::string string = s_recv(_socket);
-        std::cout << string << std::endl;
-
-        sleep(1);
-    }
-#pragma clang diagnostic pop
 }
 
 /**

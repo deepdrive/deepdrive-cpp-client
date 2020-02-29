@@ -43,8 +43,6 @@ private:
 
     rapidjson::Document
     send(rapidjson::Value &method, rapidjson::Value &args, rapidjson::Value &kwargs);
-
-    void simple_call_resp_loop();
 };
 
 }  // namespace deepdrive
