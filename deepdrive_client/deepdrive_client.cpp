@@ -60,7 +60,8 @@ void DeepdriveClient::start_sim() {
 }
 
 rapidjson::Document
-DeepdriveClient::send(rapidjson::Value &method, rapidjson::Value &args, rapidjson::Value &kwargs) {
+DeepdriveClient::send(rapidjson::Value &method, rapidjson::Value &args,
+                      rapidjson::Value &kwargs) {
     rapidjson::Document req;
     rapidjson::MemoryPoolAllocator<> &alloc = req.GetAllocator();
     req.Parse("{}");
