@@ -3,6 +3,7 @@ load("@rules_cc//cc:defs.bzl", "cc_binary")
 cc_binary(
     name = "forward_agent",
     srcs = ["forward_agent.cpp"],
+    visibility = ["//visibility:public"],
     deps = [":deepdrive_client"],
 )
 
@@ -14,5 +15,6 @@ cc_library(
         "-lzmq",
         #        "-pthread",
     ],
+    visibility = ["//visibility:public"],
     deps = ["@rapidjson"],
 )
