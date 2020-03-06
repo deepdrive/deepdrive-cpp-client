@@ -11,9 +11,10 @@ cc_library(
     name = "deepdrive_client",
     srcs = ["deepdrive_client.cpp"],
     hdrs = ["deepdrive_client.hpp"],
+    #    strip_include_prefix = '.',
     linkopts = [
         "-lzmq",
-        #        "-pthread",
+        "-pthread",
     ],
     visibility = ["//visibility:public"],
     deps = ["@rapidjson"],
