@@ -63,12 +63,11 @@ rapidjson::Document
 DeepdriveClient::send(rapidjson::Value &method, rapidjson::Value &args,
                       rapidjson::Value &kwargs) {
     rapidjson::Document req;
-    rapidjson::MemoryPoolAllocator<> &alloc = req.GetAllocator();
     req.Parse("{}");
 
-    req.AddMember("method", method, alloc);
-    req.AddMember("args", args, alloc);
-    req.AddMember("kwargs", kwargs, alloc);
+    req.AddMember("method", method, _alloc);
+    req.AddMember("args", args, _alloc);
+    req.AddMember("kwargs", kwargs, _alloc);
 
     rapidjson::StringBuffer buffer;
     rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
