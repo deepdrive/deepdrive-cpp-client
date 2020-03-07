@@ -73,8 +73,9 @@ DeepdriveClient::send(rapidjson::Value &method, rapidjson::Value &args,
     rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
     req.Accept(writer);
 
-    if(verbose)
+    if(verbose) {
         std::cout << buffer.GetString() << std::endl;
+    }
 
     zmq::message_t start_request(buffer.GetSize());
     memcpy(start_request.data(), buffer.GetString(), buffer.GetSize());
