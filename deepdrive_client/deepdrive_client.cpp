@@ -127,8 +127,8 @@ DeepdriveClient::~DeepdriveClient() {
 }
 
 rapidjson::Value
-DeepdriveClient::get_action(double steering, double throttle, double brake,
-                            double handbrake, bool has_control) {
+DeepdriveClient::get_action(const double steering, const double throttle,
+                            const double brake, const double handbrake, const bool has_control) {
     rapidjson::Value action(rapidjson::kObjectType);
     {
         rapidjson::Value steering_key("steering");
