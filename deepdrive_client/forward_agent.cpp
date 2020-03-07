@@ -16,9 +16,9 @@ int main(int argc, char* argv[]) {
 
     deepdrive::DeepdriveClient env(verbose);
     auto done = false;
-    for (int i = 0; i < 10; i ++) {
+    for (int i = 0; i < 2; i ++) {
         while ( ! done) {
-            auto step_info = env.step(env.get_action(0, 1, 0, 0, true));
+            auto step_info = env.step(0, 1, 0, 0, true);
             if(verbose) {
                 std::cout << step_info["reward"].GetFloat() << std::endl;
                 if(step_info.HasMember("observation") && step_info["observation"].IsObject()) {

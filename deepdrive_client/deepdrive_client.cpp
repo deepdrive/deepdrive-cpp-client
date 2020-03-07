@@ -56,18 +56,18 @@ void DeepdriveClient::start_sim() {
     rapidjson::Value args(rapidjson::kArrayType);
     rapidjson::Value kwargs(rapidjson::kObjectType);
     rapidjson::Value start("start");
-    rapidjson::Document resp = send(start, args, kwargs);
+    rapidjson::Document req;
+    rapidjson::Document resp = send(start, args, kwargs, req, req.GetAllocator());
 }
 
 rapidjson::Document
 DeepdriveClient::send(rapidjson::Value &method, rapidjson::Value &args,
-                      rapidjson::Value &kwargs) {
-    rapidjson::Document req;
+                      rapidjson::Value &kwargs, rapidjson::Document &req,
+                      rapidjson::MemoryPoolAllocator<> &alloc) {
     req.Parse("{}");
-
-    req.AddMember("method", method, _alloc);
-    req.AddMember("args", args, _alloc);
-    req.AddMember("kwargs", kwargs, _alloc);
+    req.AddMember("method", method, alloc);
+    req.AddMember("args", args, alloc);
+    req.AddMember("kwargs", kwargs, alloc);
 
     rapidjson::StringBuffer buffer;
     rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
@@ -97,10 +97,15 @@ DeepdriveClient::send(rapidjson::Value &method, rapidjson::Value &args,
 
 /** Server methods **/
 rapidjson::Document
-DeepdriveClient::step(rapidjson::Value action) {
+DeepdriveClient::step(const double steering, const double throttle,
+                      const double brake, const double handbrake,
+                      const bool has_control) {
     rapidjson::Value args(rapidjson::kArrayType);
     rapidjson::Value method("step");
-    return send(method, args, action);
+    rapidjson::Document req;
+    rapidjson::MemoryPoolAllocator<> &alloc = req.GetAllocator();
+    auto kwargs = get_action(steering, throttle, brake, handbrake, has_control, alloc);
+    return send(method, args, kwargs, req, alloc);
 }
 
 
@@ -108,7 +113,8 @@ rapidjson::Document DeepdriveClient::reset() {
     rapidjson::Value method("reset");
     rapidjson::Value args(rapidjson::kArrayType);
     rapidjson::Value kwargs(rapidjson::kObjectType);
-    return send(method, args, kwargs);
+    rapidjson::Document req;
+    return send(method, args, kwargs, req, req.GetAllocator());
 };
 
 rapidjson::Document
@@ -116,7 +122,8 @@ DeepdriveClient::close() {
     rapidjson::Value method("close");
     rapidjson::Value args(rapidjson::kArrayType);
     rapidjson::Value kwargs(rapidjson::kObjectType);
-    return send(method, args, kwargs);
+    rapidjson::Document req;
+    return send(method, args, kwargs, req, req.GetAllocator());
 }
 
 /** End server methods **/
@@ -127,29 +134,33 @@ DeepdriveClient::~DeepdriveClient() {
 }
 
 rapidjson::Value
-DeepdriveClient::get_action(const double steering, const double throttle,
-                            const double brake, const double handbrake, const bool has_control) {
+DeepdriveClient::get_action(
+        const double steering, const double throttle, const double brake,
+        const double handbrake, const bool has_control,
+        rapidjson::MemoryPoolAllocator<> &alloc)
+{
+
     rapidjson::Value action(rapidjson::kObjectType);
     {
         rapidjson::Value steering_key("steering");
         rapidjson::Value steering_value(steering);
-        action.AddMember(steering_key, steering_value, _alloc);
+        action.AddMember(steering_key, steering_value, alloc);
 
         rapidjson::Value throttle_key("throttle");
         rapidjson::Value throttle_value(throttle);
-        action.AddMember(throttle_key, throttle_value, _alloc);
+        action.AddMember(throttle_key, throttle_value, alloc);
 
         rapidjson::Value brake_key("brake");
         rapidjson::Value brake_value(brake);
-        action.AddMember(brake_key, brake_value, _alloc);
+        action.AddMember(brake_key, brake_value, alloc);
 
         rapidjson::Value handbrake_key("handbrake");
         rapidjson::Value handbrake_value(handbrake);
-        action.AddMember(handbrake_key, handbrake_value, _alloc);
+        action.AddMember(handbrake_key, handbrake_value, alloc);
 
         rapidjson::Value has_control_key("has_control");
         rapidjson::Value has_control_value(has_control);
-        action.AddMember(has_control_key, has_control_value, _alloc);
+        action.AddMember(has_control_key, has_control_value, alloc);
     }
     return action;
 }
