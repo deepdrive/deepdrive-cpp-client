@@ -10,7 +10,7 @@ cc_binary(
 cc_library(
     name = "deepdrive_client",
     srcs = ["deepdrive_client.cpp"],
-    hdrs = ["deepdrive_client.hpp"],
+    hdrs = ["deepdrive_client.hpp", "zmq_vendored.hpp"],
     #    strip_include_prefix = '.',
     linkopts = [
         "-lzmq",
