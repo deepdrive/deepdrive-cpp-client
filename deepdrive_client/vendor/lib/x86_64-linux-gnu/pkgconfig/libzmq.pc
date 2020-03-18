@@ -5,7 +5,8 @@ includedir=${prefix}/include
 
 Name: libzmq
 Description: 0MQ c++ library
-Version: 4.2.5
+Version: 4.3.2
 Libs: -L${libdir} -lzmq
-Libs.private: -lstdc++  -lsodium -lpgm -lpthread -lm -lnorm
+Libs.private: -lstdc++  -lpthread -lrt -ldl
+Requires.private:  krb5-gssapi libsodium openpgm-5.2 >= 5.2 norm libunwind
 Cflags: -I${includedir} 
