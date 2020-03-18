@@ -13,7 +13,7 @@ cc_library(
     hdrs = ["deepdrive_client.hpp", "zmq_vendored.hpp", "zmq_vendored.h"],
     #    strip_include_prefix = '.',
     linkopts = [
-        "-lzmq",
+#        "-lzmq",
         "-pthread",
     ],
     visibility = ["//visibility:public"],
