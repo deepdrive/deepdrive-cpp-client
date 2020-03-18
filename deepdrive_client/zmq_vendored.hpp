@@ -35,7 +35,7 @@
     #define ZMQ_EXPLICIT
 #endif
 
-#include "zmq.h"
+#include "zmq_vendored.h"
 
 #include <algorithm>
 #include <cassert>
