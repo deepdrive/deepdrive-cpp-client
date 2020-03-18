@@ -1,6 +1,6 @@
 #pragma once
 
-#include "zmq_vendored.hpp"
+#include "zmq.hpp"  // Use zmq_vendored.hpp if necessary
 #include <rapidjson/document.h>
 
 namespace deepdrive {

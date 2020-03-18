@@ -10,10 +10,11 @@ cc_binary(
 cc_library(
     name = "deepdrive_client",
     srcs = ["deepdrive_client.cpp", "libzmq.a"],
-    hdrs = ["deepdrive_client.hpp", "zmq_vendored.hpp", "zmq_vendored.h"],
+#    hdrs = ["deepdrive_client.hpp", "zmq_vendored.hpp", "zmq_vendored.h"],  # use instead of below if necessary
+    hdrs = ["deepdrive_client.hpp"],
     #    strip_include_prefix = '.',
     linkopts = [
-#        "-lzmq",
+        "-lzmq",
         "-pthread",
     ],
     visibility = ["//visibility:public"],
