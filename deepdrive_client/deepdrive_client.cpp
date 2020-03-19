@@ -10,7 +10,7 @@
 static std::string s_recv(zmq::socket_t &socket) {
 
     zmq::message_t message;
-    socket.recv(&message);
+    socket.recv(message, zmq::recv_flags::none);
 
     return std::string(static_cast<char *>(message.data()), message.size());
 }
@@ -79,7 +79,7 @@ DeepdriveClient::send(rapidjson::Value &method, rapidjson::Value &args,
 
     zmq::message_t start_request(buffer.GetSize());
     memcpy(start_request.data(), buffer.GetString(), buffer.GetSize());
-    _socket.send(start_request);
+    _socket.send(start_request, zmq::send_flags::none);
 
     std::string resp_str = s_recv(_socket);
     if(verbose)
