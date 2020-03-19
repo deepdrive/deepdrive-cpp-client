@@ -15,7 +15,7 @@ cc_library(
             "vendor/include/zmq_vendored.h"],
     #    strip_include_prefix = '.',
     linkopts = [
-        "-lzmq",
+#        "-lzmq",  #  Uncomment this if you get errors like "error: undefined reference to 'zmq_errno'"
         "-pthread",
     ],
     visibility = ["//visibility:public"],
